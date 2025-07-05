@@ -18,13 +18,7 @@ A beautiful and interactive Sudoku solver written in Python, featuring a user-fr
 - 🧠 求解结果数字用不同颜色显示
 - 🌈 美化 UI，支持九宫格边界美化
 
----
 
-## 🖼️ Screenshot | 截图
-
-> 放置你的 `resources/screenshot.png` 或运行界面图。
-
----
 
 ## 📦 Installation | 安装方式
 
