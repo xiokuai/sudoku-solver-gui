@@ -1,0 +1,53 @@
+{
+  "__bytecode.const": {
+    "blob_name": ".bytecode",
+    "blob_size": 3182058,
+    "input_size": 3201851
+  },
+  "__constants.const": {
+    "blob_name": "",
+    "blob_size": 800,
+    "input_size": 2063
+  },
+  "module.PyQt5-preLoad.const": {
+    "blob_name": "PyQt5-preLoad",
+    "blob_size": 186,
+    "input_size": 411
+  },
+  "module.PyQt5.QtCore-postLoad.const": {
+    "blob_name": "PyQt5.QtCore-postLoad",
+    "blob_size": 292,
+    "input_size": 550
+  },
+  "module.PyQt5.const": {
+    "blob_name": "PyQt5",
+    "blob_size": 370,
+    "input_size": 740
+  },
+  "module.__main__.const": {
+    "blob_name": "__main__",
+    "blob_size": 217,
+    "input_size": 430
+  },
+  "module.board_logic.const": {
+    "blob_name": "board_logic",
+    "blob_size": 308,
+    "input_size": 559
+  },
+  "module.dlx_solver.const": {
+    "blob_name": "dlx_solver",
+    "blob_size": 1281,
+    "input_size": 2290
+  },
+  "module.sudoku_generator.const": {
+    "blob_name": "sudoku_generator",
+    "blob_size": 673,
+    "input_size": 1110
+  },
+  "module.ui_main.const": {
+    "blob_name": "ui_main",
+    "blob_size": 3848,
+    "input_size": 5712
+  },
+  "total": 803
+}
