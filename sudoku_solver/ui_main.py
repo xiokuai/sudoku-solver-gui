@@ -109,20 +109,21 @@ class SudokuWindow(QMainWindow):
         self.lang_combo = QComboBox()
         for code, name in self.supported_langs:
             self.lang_combo.addItem(name, code)
-        # 设置当前选中项
         idx = [l[0] for l in self.supported_langs].index(self.current_lang)
         self.lang_combo.setCurrentIndex(idx)
         self.lang_combo.setFixedHeight(40)
         self.lang_combo.currentIndexChanged.connect(self.on_language_changed)
 
-        # 按钮布局美化
-        btn_layout = QGridLayout()
-        btns = [self.solve_button, self.clear_button, self.import_button,
-                self.export_button, self.generate_button]
-        for index, btn in enumerate(btns):
-            btn_layout.addWidget(btn, index // 2, index % 2)
-        # 语言选择框单独一行
-        btn_layout.addWidget(self.lang_combo, 3, 0, 1, 2)
+        # 按钮和下拉框规则排布
+        btn_layout = QVBoxLayout()
+        btn_row1 = QGridLayout()
+        btn_row1.addWidget(self.solve_button, 0, 0)
+        btn_row1.addWidget(self.clear_button, 0, 1)
+        btn_row1.addWidget(self.import_button, 0, 2)
+        btn_row1.addWidget(self.export_button, 0, 3)
+        btn_layout.addLayout(btn_row1)
+        btn_layout.addWidget(self.generate_button)
+        btn_layout.addWidget(self.lang_combo)
 
         layout.addLayout(grid_layout)
         layout.addLayout(btn_layout)
@@ -149,7 +150,6 @@ class SudokuWindow(QMainWindow):
         self.generate_button.setText(self.tr("生成题目"))
         # 刷新下拉框显示文本
         for i, (code, name) in enumerate(self.supported_langs):
-            # 若翻译文件有对应翻译，可用 self.tr(name)
             self.lang_combo.setItemText(i, name)
 
     def apply_styles(self):
