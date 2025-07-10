@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt
 class SudokuWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("数独助手 by-wuli")
+        self.setWindowTitle(self.tr("数独助手 by-wuli"))
         self.setFixedSize(500, 780)
 
         self.central_widget = QWidget()
@@ -40,11 +40,11 @@ class SudokuWindow(QMainWindow):
                 grid_layout.addWidget(cell, i, j)
 
         # 按钮区
-        self.solve_button = QPushButton("求解")
-        self.clear_button = QPushButton("清空")
-        self.import_button = QPushButton("导入")
-        self.export_button = QPushButton("导出")
-        self.generate_button = QPushButton("生成题目")
+        self.solve_button = QPushButton(self.tr("求解"))
+        self.clear_button = QPushButton(self.tr("清空"))
+        self.import_button = QPushButton(self.tr("导入"))
+        self.export_button = QPushButton(self.tr("导出"))
+        self.generate_button = QPushButton(self.tr("生成题目"))
 
         for btn in [self.solve_button, self.clear_button, self.import_button,
                     self.export_button, self.generate_button]:
@@ -144,14 +144,14 @@ class SudokuWindow(QMainWindow):
         board = self.get_board()
         conflicts = get_conflict_cells(board)
         if conflicts:
-            QMessageBox.warning(self, "错误", "存在冲突，请检查红色格子！")
+            QMessageBox.warning(self, self.tr("错误"), self.tr("存在冲突，请检查红色格子！"))
             return
 
         solution = solve_sudoku(board)
         if solution:
             self.set_board(solution)
         else:
-            QMessageBox.information(self, "无解", "该数独无解，请检查输入。")
+            QMessageBox.information(self, self.tr("无解"), self.tr("该数独无解，请检查输入。"))
 
     def clear(self):
         for i in range(9):
@@ -163,19 +163,19 @@ class SudokuWindow(QMainWindow):
         board = self.get_board()
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "导出棋盘", "", "JSON 文件 (*.json);;所有文件 (*)", options=options
+            self, self.tr("导出棋盘"), "", self.tr("JSON 文件 (*.json);;所有文件 (*)"), options=options
         )
         if file_path:
             try:
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(board, f)
             except Exception as e:
-                QMessageBox.critical(self, "保存失败", str(e))
+                QMessageBox.critical(self, self.tr("保存失败"), str(e))
 
     def import_board(self):
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "导入棋盘", "", "JSON 文件 (*.json);;所有文件 (*)", options=options
+            self, self.tr("导入棋盘"), "", self.tr("JSON 文件 (*.json);;所有文件 (*)"), options=options
         )
         if file_path:
             try:
@@ -184,9 +184,9 @@ class SudokuWindow(QMainWindow):
                 if self._validate_imported_board(board):
                     self.set_board(board)
                 else:
-                    QMessageBox.warning(self, "导入失败", "文件格式不合法，必须是9x9的数字矩阵。")
+                    QMessageBox.warning(self, self.tr("导入失败", "文件格式不合法，必须是9x9的数字矩阵。"))
             except Exception as e:
-                QMessageBox.critical(self, "导入失败", str(e))
+                QMessageBox.critical(self, self.tr("导入失败", str(e)))
 
     def generate_board(self):
         from sudoku_generator import generate_puzzle
