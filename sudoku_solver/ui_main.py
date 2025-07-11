@@ -1,16 +1,27 @@
 import json
+import os
+import locale
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QGridLayout, QLineEdit, QPushButton,
-    QVBoxLayout, QMessageBox, QFileDialog, QGridLayout
+    QVBoxLayout, QMessageBox, QFileDialog, QGridLayout, QComboBox
 )
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QTranslator, Qt, QCoreApplication
 
 
 class SudokuWindow(QMainWindow):
     def __init__(self):
+        self.translator = QTranslator()
+        self.lang_file = os.path.expanduser("~/.sudoku_lang.json")
+        self.supported_langs = [
+            ("en_US", "English"),
+            ("zh_CN", "简体中文"),
+            ("fr_FR", "Français")
+        ]
+        self.current_lang = self._load_lang_setting()
         super().__init__()
-        self.setWindowTitle("数独助手 by-wuli")
+        self._apply_language(self.current_lang)
+        self.setWindowTitle(self.tr("数独助手 by-wuli"))
         self.setFixedSize(500, 780)
 
         self.central_widget = QWidget()
@@ -19,6 +30,44 @@ class SudokuWindow(QMainWindow):
         self.grid = [[None for _ in range(9)] for _ in range(9)]
         self.current_cell = None
         self.init_ui()
+
+    def _load_lang_setting(self):
+        # 优先读取本地设置，否则根据系统语言
+        if os.path.exists(self.lang_file):
+            try:
+                with open(self.lang_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    lang = data.get("lang", self._get_system_lang())
+                    if lang not in [l[0] for l in self.supported_langs]:
+                        lang = self._get_system_lang()
+                    return lang
+            except Exception:
+                return self._get_system_lang()
+        else:
+            return self._get_system_lang()
+
+    def _save_lang_setting(self, lang):
+        try:
+            with open(self.lang_file, "w", encoding="utf-8") as f:
+                json.dump({"lang": lang}, f)
+        except Exception:
+            pass
+
+    def _get_system_lang(self):
+        sys_lang = locale.getdefaultlocale()[0]
+        if sys_lang:
+            if sys_lang.startswith("zh"):
+                return "zh_CN"
+            elif sys_lang.startswith("fr"):
+                return "fr_FR"
+        return "en_US"
+
+    def _apply_language(self, lang):
+        QCoreApplication.removeTranslator(self.translator)
+        self.translator = QTranslator()
+        self.translator.load(f"mutli-language/sudoku_{lang}.qm")
+        QCoreApplication.installTranslator(self.translator)
+        self.current_lang = lang
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -40,11 +89,11 @@ class SudokuWindow(QMainWindow):
                 grid_layout.addWidget(cell, i, j)
 
         # 按钮区
-        self.solve_button = QPushButton("求解")
-        self.clear_button = QPushButton("清空")
-        self.import_button = QPushButton("导入")
-        self.export_button = QPushButton("导出")
-        self.generate_button = QPushButton("生成题目")
+        self.solve_button = QPushButton(self.tr("求解"))
+        self.clear_button = QPushButton(self.tr("清空"))
+        self.import_button = QPushButton(self.tr("导入"))
+        self.export_button = QPushButton(self.tr("导出"))
+        self.generate_button = QPushButton(self.tr("生成题目"))
 
         for btn in [self.solve_button, self.clear_button, self.import_button,
                     self.export_button, self.generate_button]:
@@ -56,12 +105,25 @@ class SudokuWindow(QMainWindow):
         self.export_button.clicked.connect(self.export_board)
         self.generate_button.clicked.connect(self.generate_board)
 
-        # 按钮布局美化
-        btn_layout = QGridLayout()
-        btns = [self.solve_button, self.clear_button, self.import_button,
-                self.export_button, self.generate_button]
-        for index, btn in enumerate(btns):
-            btn_layout.addWidget(btn, index // 2, index % 2)
+        # 语言选择下拉框
+        self.lang_combo = QComboBox()
+        for code, name in self.supported_langs:
+            self.lang_combo.addItem(name, code)
+        idx = [l[0] for l in self.supported_langs].index(self.current_lang)
+        self.lang_combo.setCurrentIndex(idx)
+        self.lang_combo.setFixedHeight(40)
+        self.lang_combo.currentIndexChanged.connect(self.on_language_changed)
+
+        # 按钮和下拉框规则排布
+        btn_layout = QVBoxLayout()
+        btn_row1 = QGridLayout()
+        btn_row1.addWidget(self.solve_button, 0, 0)
+        btn_row1.addWidget(self.clear_button, 0, 1)
+        btn_row1.addWidget(self.import_button, 0, 2)
+        btn_row1.addWidget(self.export_button, 0, 3)
+        btn_layout.addLayout(btn_row1)
+        btn_layout.addWidget(self.generate_button)
+        btn_layout.addWidget(self.lang_combo)
 
         layout.addLayout(grid_layout)
         layout.addLayout(btn_layout)
@@ -70,6 +132,25 @@ class SudokuWindow(QMainWindow):
 
         # 应用全局样式
         self.apply_styles()
+
+    def on_language_changed(self, idx):
+        lang = self.lang_combo.itemData(idx)
+        if lang != self.current_lang:
+            self._apply_language(lang)
+            self._save_lang_setting(lang)
+            self._refresh_ui_texts()
+
+    def _refresh_ui_texts(self):
+        # 刷新所有按钮和窗口标题文本
+        self.setWindowTitle(self.tr("数独助手 by-wuli"))
+        self.solve_button.setText(self.tr("求解"))
+        self.clear_button.setText(self.tr("清空"))
+        self.import_button.setText(self.tr("导入"))
+        self.export_button.setText(self.tr("导出"))
+        self.generate_button.setText(self.tr("生成题目"))
+        # 刷新下拉框显示文本
+        for i, (code, name) in enumerate(self.supported_langs):
+            self.lang_combo.setItemText(i, name)
 
     def apply_styles(self):
         self.setStyleSheet("""
@@ -144,14 +225,14 @@ class SudokuWindow(QMainWindow):
         board = self.get_board()
         conflicts = get_conflict_cells(board)
         if conflicts:
-            QMessageBox.warning(self, "错误", "存在冲突，请检查红色格子！")
+            QMessageBox.warning(self, self.tr("错误"), self.tr("存在冲突，请检查红色格子！"))
             return
 
         solution = solve_sudoku(board)
         if solution:
             self.set_board(solution)
         else:
-            QMessageBox.information(self, "无解", "该数独无解，请检查输入。")
+            QMessageBox.information(self, self.tr("无解"), self.tr("该数独无解，请检查输入。"))
 
     def clear(self):
         for i in range(9):
@@ -163,19 +244,19 @@ class SudokuWindow(QMainWindow):
         board = self.get_board()
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "导出棋盘", "", "JSON 文件 (*.json);;所有文件 (*)", options=options
+            self, self.tr("导出棋盘"), "", self.tr("JSON 文件 (*.json);;所有文件 (*)"), options=options
         )
         if file_path:
             try:
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(board, f)
             except Exception as e:
-                QMessageBox.critical(self, "保存失败", str(e))
+                QMessageBox.critical(self, self.tr("保存失败"), str(e))
 
     def import_board(self):
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "导入棋盘", "", "JSON 文件 (*.json);;所有文件 (*)", options=options
+            self, self.tr("导入棋盘"), "", self.tr("JSON 文件 (*.json);;所有文件 (*)"), options=options
         )
         if file_path:
             try:
@@ -184,9 +265,9 @@ class SudokuWindow(QMainWindow):
                 if self._validate_imported_board(board):
                     self.set_board(board)
                 else:
-                    QMessageBox.warning(self, "导入失败", "文件格式不合法，必须是9x9的数字矩阵。")
+                    QMessageBox.warning(self, self.tr("导入失败", "文件格式不合法，必须是9x9的数字矩阵。"))
             except Exception as e:
-                QMessageBox.critical(self, "导入失败", str(e))
+                QMessageBox.critical(self, self.tr("导入失败", str(e)))
 
     def generate_board(self):
         from sudoku_generator import generate_puzzle
